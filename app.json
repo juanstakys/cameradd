@@ -13,7 +13,6 @@
     },
     "android": {
       "permissions": [
-        "android.permission.CAMERA",
         "android.permission.CAMERA"
       ],
       "adaptiveIcon": {
@@ -43,7 +42,8 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "./plugins/with-mlkit-ocr"
     ],
     "experiments": {
       "typedRoutes": true,

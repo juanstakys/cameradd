@@ -1,8 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Camera, useCameraDevice, useCameraPermission, useFrameProcessor } from 'react-native-vision-camera';
+import { Camera, VisionCameraProxy, useCameraDevice, useCameraPermission, useFrameProcessor } from 'react-native-vision-camera';
 import { runOnJS, useSharedValue } from 'react-native-reanimated';
-import { scanOCR } from 'vision-camera-ocr';
 import { useItems } from '../../src/state/ItemsContext';
 import { formatCentsArg, parseArgCurrencyWordToCents } from '../../src/utils/currency';
 
@@ -20,6 +19,15 @@ export default function CameraScreen() {
   const [candidates, setCandidates] = useState<WordBox[]>([]);
   const lastRun = useSharedValue(0);
 
+  const plugin = useMemo(() => {
+    try {
+      // @ts-expect-error worklet types are provided by the lib
+      return VisionCameraProxy.initFrameProcessorPlugin('recognizeNumbers', {});
+    } catch (e) {
+      return undefined;
+    }
+  }, []);
+
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet';
     const now = global.performance.now();
@@ -27,45 +35,37 @@ export default function CameraScreen() {
     lastRun.value = now;
 
     try {
-      const result: any = scanOCR(frame);
-      const words: any[] = [];
-      const pushWord = (w: any) => {
-        if (!w) return;
-        const text = String(w.text ?? '');
-        if (!text) return;
-        // Only pass through items that look like they may contain numbers
-        if (!/[0-9OoIl|]/.test(text)) return;
-        const box = w.frame ?? w.boundingBox ?? w.bounds;
-        if (!box) return;
-        words.push({
-          id: `${text}-${box.x}-${box.y}-${box.width}-${box.height}`,
-          text,
-          box: { x: box.x, y: box.y, width: box.width, height: box.height },
-          frame: { width: frame.width, height: frame.height },
-        });
-      };
-
-      const iter = (node: any) => {
-        if (!node) return;
-        if (Array.isArray(node)) node.forEach(iter);
-        else if (node.words) node.words.forEach(iter);
-        else if (node.elements) node.elements.forEach(iter);
-        else if (node.lines) node.lines.forEach(iter);
-        else if (node.blocks) node.blocks.forEach(iter);
-        else if (node.text && (node.frame || node.boundingBox || node.bounds)) pushWord(node);
-      };
-      iter(result);
-      runOnJS(setCandidates)(words);
+      if (!plugin) return;
+      const result: any = plugin.call(frame, {});
+      const items: any[] = [];
+      if (Array.isArray(result)) {
+        for (const node of result) {
+          if (!node) continue;
+          const text = String(node.text ?? '').trim();
+          if (!text) continue;
+          if (!/[0-9OoIl|]/.test(text)) continue;
+          const rb = node.box;
+          if (!rb) continue;
+          items.push({
+            id: `${text}-${rb.x}-${rb.y}-${rb.width}-${rb.height}`,
+            text,
+            box: { x: rb.x, y: rb.y, width: rb.width, height: rb.height },
+            frame: { width: frame.width, height: frame.height },
+          });
+        }
+      }
+      runOnJS(setCandidates)(items);
     } catch (e) {
       // ignore OCR errors per frame
     }
-  }, [lastRun]);
+  }, [lastRun, plugin]);
 
   const [viewSize, setViewSize] = useState({ width: 0, height: 0 });
 
   const validNumbers = useMemo(() => {
     return candidates
       .map((w) => {
+        // Accept only if the entire item text is a single valid AR-format number
         const cents = parseArgCurrencyWordToCents(w.text);
         if (cents == null || cents <= 0) return null;
         return { ...w, cents };
