@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
 import { Swipeable } from 'react-native-gesture-handler';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useItems } from '../../src/state/ItemsContext';
-import { formatCentsArg, parseArgCurrencyWordToCents, sanitizeOCRTextForArg } from '../../src/utils/currency';
+import { formatCentsArg, parseArgCurrencyWordToCents } from '../../src/utils/currency';
 
 export default function ListScreen() {
   const { items, remove, edit } = useItems();
@@ -172,4 +172,3 @@ const styles = StyleSheet.create({
   btnPrimaryText: { color: '#fff', fontWeight: '700' },
   btnText: { fontSize: 16 },
 });
-
