@@ -15,9 +15,10 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useItems } from '../../src/state/ItemsContext';
 import { formatCentsArg, parseArgCurrencyWordToCents } from '../../src/utils/currency';
 import { ThemeColors, useThemeColors } from '../../src/theme/colors';
+import { ManualEntryBar } from '../../src/components/ManualEntryBar';
 
 export default function ListScreen() {
-  const { items, remove, edit } = useItems();
+  const { items, remove, edit, totalCents, add } = useItems();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -43,6 +44,7 @@ export default function ListScreen() {
 
   return (
     <View style={styles.container}>
+      <ManualEntryBar totalCents={totalCents} onAdd={add} containerStyle={styles.manualBar} />
       {items.length === 0 ? (
         <View style={styles.empty}>
           <MaterialIcons name="playlist-remove" size={48} color={colors.textMuted} />
@@ -116,6 +118,12 @@ export default function ListScreen() {
 const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
+    manualBar: {
+      borderTopWidth: 0,
+      marginBottom: 12,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+    },
     empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
     emptyText: { fontSize: 16, color: colors.textSecondary },
     emptyHint: { fontSize: 14, color: colors.textMuted },
