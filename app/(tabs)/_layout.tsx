@@ -1,11 +1,24 @@
-import { Tabs } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
+import { Tabs } from 'expo-router';
+import { useThemeColors } from '../../src/theme/colors';
 
 export default function TabsLayout() {
+  const colors = useThemeColors();
+
   return (
     <Tabs
+      sceneContainerStyle={{ backgroundColor: colors.background }}
       screenOptions={{
         headerTitleAlign: 'center',
+        headerStyle: { backgroundColor: colors.headerBackground },
+        headerTintColor: colors.headerTint,
+        tabBarActiveTintColor: colors.tabBarActive,
+        tabBarInactiveTintColor: colors.tabBarInactive,
+        tabBarStyle: {
+          backgroundColor: colors.tabBarBackground,
+          borderTopColor: colors.tabBarBorder,
+        },
+        tabBarLabelStyle: { fontWeight: '600' },
       }}
     >
       <Tabs.Screen
@@ -29,4 +42,3 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
-

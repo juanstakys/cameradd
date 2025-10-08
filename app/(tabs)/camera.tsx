@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -12,11 +12,14 @@ import {
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import { useItems } from '../../src/state/ItemsContext';
 import { formatCentsArg, parseArgCurrencyWordToCents } from '../../src/utils/currency';
+import { ThemeColors, useThemeColors } from '../../src/theme/colors';
 
 export default function CameraScreen() {
   const device = useCameraDevice('back');
   const { hasPermission, requestPermission } = useCameraPermission();
   const { totalCents, add } = useItems();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [showManualModal, setShowManualModal] = useState(false);
   const [input, setInput] = useState('');
@@ -41,7 +44,7 @@ export default function CameraScreen() {
   if (!device) {
     return (
       <View style={styles.center}>
-        <Text>No se encontró una cámara disponible.</Text>
+        <Text style={styles.centerText}>No se encontró una cámara disponible.</Text>
       </View>
     );
   }
@@ -79,7 +82,7 @@ export default function CameraScreen() {
 
       <Modal visible={showManualModal} animationType="slide" transparent onRequestClose={() => setShowManualModal(false)}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.modalBackdrop}
         >
           <View style={styles.modalCard}>
@@ -111,69 +114,91 @@ export default function CameraScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000' },
-  preview: { flex: 1, position: 'relative' },
-  overlay: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    bottom: 24,
-    padding: 16,
-    borderRadius: 12,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    gap: 6,
-  },
-  overlayTitle: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  overlayText: { color: '#f3f4f6', fontSize: 14 },
-  totalBar: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e5e7eb',
-  },
-  totalLabel: { fontSize: 16, color: '#6b7280' },
-  totalValue: { fontSize: 24, fontWeight: '600' },
-  addBtn: {
-    backgroundColor: '#2563eb',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 10,
-  },
-  addBtnText: { color: '#fff', fontWeight: '600', fontSize: 16 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
-  permissionBtn: { backgroundColor: '#1f2937', paddingHorizontal: 16, paddingVertical: 12, borderRadius: 8 },
-  permissionText: { color: '#fff', fontSize: 16 },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'flex-end',
-  },
-  modalCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
-  modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: 12 },
-  input: {
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 18,
-  },
-  error: { color: '#ef4444', marginTop: 8 },
-  modalActions: { marginTop: 16, flexDirection: 'row', justifyContent: 'flex-end', gap: 12 },
-  btn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8 },
-  btnGhost: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#d1d5db' },
-  btnGhostText: { color: '#374151' },
-  btnPrimary: { backgroundColor: '#2563eb' },
-  btnPrimaryText: { color: '#fff', fontWeight: '700' },
-  btnText: { fontSize: 16 },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    preview: { flex: 1, position: 'relative' },
+    overlay: {
+      position: 'absolute',
+      left: 16,
+      right: 16,
+      bottom: 24,
+      padding: 16,
+      borderRadius: 12,
+      backgroundColor: colors.overlayBackground,
+      gap: 6,
+    },
+    overlayTitle: { color: colors.overlayTextPrimary, fontSize: 16, fontWeight: '600' },
+    overlayText: { color: colors.overlayTextSecondary, fontSize: 14 },
+    totalBar: {
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      backgroundColor: colors.surface,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
+    },
+    totalLabel: { fontSize: 16, color: colors.textSecondary },
+    totalValue: { fontSize: 24, fontWeight: '600', color: colors.textPrimary },
+    addBtn: {
+      backgroundColor: colors.accent,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderRadius: 10,
+    },
+    addBtnText: { color: colors.accentContrast, fontWeight: '600', fontSize: 16 },
+    center: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 24,
+      backgroundColor: colors.background,
+    },
+    centerText: { color: colors.textPrimary, textAlign: 'center', fontSize: 16, marginBottom: 12 },
+    permissionBtn: {
+      backgroundColor: colors.accent,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderRadius: 8,
+    },
+    permissionText: { color: colors.accentContrast, fontSize: 16, fontWeight: '600' },
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: colors.modalBackdrop,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 24,
+    },
+    modalCard: {
+      backgroundColor: colors.modalBackground,
+      padding: 16,
+      borderRadius: 16,
+      width: '100%',
+      maxWidth: 420,
+    },
+    modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: 12, color: colors.textPrimary },
+    input: {
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontSize: 18,
+      backgroundColor: colors.inputBackground,
+      color: colors.textPrimary,
+    },
+    error: { color: colors.destructive, marginTop: 8 },
+    modalActions: { marginTop: 16, flexDirection: 'row', justifyContent: 'flex-end', gap: 12 },
+    btn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8 },
+    btnGhost: {
+      backgroundColor: colors.buttonGhostBackground,
+      borderWidth: 1,
+      borderColor: colors.buttonGhostBorder,
+    },
+    btnGhostText: { color: colors.buttonGhostText },
+    btnPrimary: { backgroundColor: colors.accent },
+    btnPrimaryText: { color: colors.accentContrast, fontWeight: '700' },
+    btnText: { fontSize: 16, color: colors.textPrimary },
+  });

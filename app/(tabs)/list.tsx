@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -14,9 +14,12 @@ import { Swipeable } from 'react-native-gesture-handler';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useItems } from '../../src/state/ItemsContext';
 import { formatCentsArg, parseArgCurrencyWordToCents } from '../../src/utils/currency';
+import { ThemeColors, useThemeColors } from '../../src/theme/colors';
 
 export default function ListScreen() {
   const { items, remove, edit } = useItems();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +45,7 @@ export default function ListScreen() {
     <View style={styles.container}>
       {items.length === 0 ? (
         <View style={styles.empty}>
-          <MaterialIcons name="playlist-remove" size={48} color="#9ca3af" />
+          <MaterialIcons name="playlist-remove" size={48} color={colors.textMuted} />
           <Text style={styles.emptyText}>No hay items aún</Text>
           <Text style={styles.emptyHint}>Agregue importes desde la cámara</Text>
         </View>
@@ -56,7 +59,7 @@ export default function ListScreen() {
             <Swipeable
               renderRightActions={() => (
                 <View style={styles.deleteAction}>
-                  <MaterialIcons name="delete" size={28} color="#fff" />
+                  <MaterialIcons name="delete" size={28} color={colors.destructiveContrast} />
                 </View>
               )}
               onSwipeableOpen={(dir) => dir === 'right' && remove(item.id)}
@@ -67,7 +70,7 @@ export default function ListScreen() {
                   <Text style={styles.date}>{new Date(item.createdAt).toLocaleString()}</Text>
                 </View>
                 <Pressable style={styles.editBtn} onPress={() => onOpenEdit(item.id, item.cents)}>
-                  <MaterialIcons name="edit" size={20} color="#2563eb" />
+                  <MaterialIcons name="edit" size={20} color={colors.accent} />
                   <Text style={styles.editText}>Editar</Text>
                 </Pressable>
               </View>
@@ -78,7 +81,7 @@ export default function ListScreen() {
 
       <Modal visible={editingId !== null} animationType="slide" transparent onRequestClose={() => setEditingId(null)}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.modalBackdrop}
         >
           <View style={styles.modalCard}>
@@ -110,65 +113,75 @@ export default function ListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
-  emptyText: { fontSize: 16, color: '#6b7280' },
-  emptyHint: { fontSize: 14, color: '#9ca3af' },
-  sep: { height: 1, backgroundColor: '#e5e7eb' },
-  row: {
-    backgroundColor: '#fff',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  amount: { fontSize: 20, fontWeight: '600' },
-  date: { marginTop: 2, fontSize: 12, color: '#6b7280' },
-  editBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#bfdbfe',
-    backgroundColor: '#eff6ff',
-  },
-  editText: { color: '#2563eb', fontWeight: '600' },
-  deleteAction: {
-    width: 88,
-    backgroundColor: '#ef4444',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'flex-end',
-  },
-  modalCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
-  modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: 12 },
-  input: {
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 18,
-  },
-  error: { color: '#ef4444', marginTop: 8 },
-  modalActions: { marginTop: 16, flexDirection: 'row', justifyContent: 'flex-end', gap: 12 },
-  btn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8 },
-  btnGhost: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#d1d5db' },
-  btnGhostText: { color: '#374151' },
-  btnPrimary: { backgroundColor: '#2563eb' },
-  btnPrimaryText: { color: '#fff', fontWeight: '700' },
-  btnText: { fontSize: 16 },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
+    emptyText: { fontSize: 16, color: colors.textSecondary },
+    emptyHint: { fontSize: 14, color: colors.textMuted },
+    sep: { height: 1, backgroundColor: colors.border },
+    row: {
+      backgroundColor: colors.surface,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    amount: { fontSize: 20, fontWeight: '600', color: colors.textPrimary },
+    date: { marginTop: 2, fontSize: 12, color: colors.textSecondary },
+    editBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      backgroundColor: colors.surfaceAlt,
+    },
+    editText: { color: colors.accent, fontWeight: '600' },
+    deleteAction: {
+      width: 88,
+      backgroundColor: colors.destructive,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: colors.modalBackdrop,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 24,
+    },
+    modalCard: {
+      backgroundColor: colors.modalBackground,
+      padding: 16,
+      borderRadius: 16,
+      width: '100%',
+      maxWidth: 420,
+    },
+    modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: 12, color: colors.textPrimary },
+    input: {
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontSize: 18,
+      backgroundColor: colors.inputBackground,
+      color: colors.textPrimary,
+    },
+    error: { color: colors.destructive, marginTop: 8 },
+    modalActions: { marginTop: 16, flexDirection: 'row', justifyContent: 'flex-end', gap: 12 },
+    btn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8 },
+    btnGhost: {
+      backgroundColor: colors.buttonGhostBackground,
+      borderWidth: 1,
+      borderColor: colors.buttonGhostBorder,
+    },
+    btnGhostText: { color: colors.buttonGhostText },
+    btnPrimary: { backgroundColor: colors.accent },
+    btnPrimaryText: { color: colors.accentContrast, fontWeight: '700' },
+    btnText: { fontSize: 16, color: colors.textPrimary },
+  });
