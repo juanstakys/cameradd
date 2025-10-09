@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import TextRecognition, { type Frame } from '@react-native-ml-kit/text-recognition';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LayoutChangeEvent, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import { ManualEntryBar } from '../../src/components/ManualEntryBar';
 import { useItems } from '../../src/state/ItemsContext';
 import { ThemeColors, useThemeColors } from '../../src/theme/colors';
