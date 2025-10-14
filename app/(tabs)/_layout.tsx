@@ -24,7 +24,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="camera"
         options={{
-          title: 'Camera',
+          title: 'Cámara',
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="photo-camera" size={size} color={color} />
           ),
@@ -33,7 +33,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="list"
         options={{
-          title: 'List',
+          title: 'Lista',
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="list-alt" size={size} color={color} />
           ),
