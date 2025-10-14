@@ -151,6 +151,12 @@ export default function CameraScreen() {
           photo
         />
         <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
+          <View
+            pointerEvents="none"
+            style={[styles.focusGuideContainer, { transform: [{ translateY: -previewSize.height * 0.2 || 0 }] }]}
+          >
+            <View style={styles.focusGuideBox} />
+          </View>
           {scaledBoxes.map((box) => (
             <Pressable
               key={box.key}
@@ -198,6 +204,20 @@ const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
     preview: { flex: 1, position: 'relative' },
+    focusGuideContainer: {
+      ...StyleSheet.absoluteFillObject,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    focusGuideBox: {
+      width: '75%',
+      maxWidth: 320,
+      aspectRatio: 2.5,
+      borderWidth: 3,
+      borderRadius: 16,
+      borderColor: '#ffffff',
+      backgroundColor: 'rgba(255,255,255,0.12)',
+    },
     overlay: {
       position: 'absolute',
       left: 16,
