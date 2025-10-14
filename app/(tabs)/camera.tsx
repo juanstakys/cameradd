@@ -1,5 +1,5 @@
 import TextRecognition, { type Frame } from '@react-native-ml-kit/text-recognition';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LayoutChangeEvent, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import { ManualEntryBar } from '../../src/components/ManualEntryBar';
@@ -31,8 +31,11 @@ export default function CameraScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const cameraRef = useRef<Camera>(null);
+  const isProcessingRef = useRef(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [previewSize, setPreviewSize] = useState({ width: 0, height: 0 });
+  const [anticipatedAmount, setAnticipatedAmount] = useState<BlockOverlay | null>(null);
+  const flushTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handlePreviewLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
@@ -40,9 +43,10 @@ export default function CameraScreen() {
   }, []);
 
   const handleRecognize = useCallback(async () => {
-    if (!cameraRef.current || isProcessing) return;
+    if (!cameraRef.current || isProcessingRef.current || flushTimeoutRef.current) return;
 
     try {
+      isProcessingRef.current = true;
       setIsProcessing(true);
       const photo = await cameraRef.current.takePhoto({
         qualityPrioritization: 'balanced',
@@ -65,6 +69,7 @@ export default function CameraScreen() {
       }
 
       if (overlays.length === 0) {
+        setAnticipatedAmount(null);
         return;
       }
 
@@ -74,13 +79,50 @@ export default function CameraScreen() {
         return currentArea > largestArea ? current : largest;
       }, overlays[0]);
 
-      add(largestOverlay.cents);
+      setAnticipatedAmount(largestOverlay);
     } catch (error) {
       console.warn('Fallo el reconocimiento de texto', error);
     } finally {
+      isProcessingRef.current = false;
       setIsProcessing(false);
     }
-  }, [add, isProcessing]);
+  }, []);
+
+  const handleAddAnticipated = useCallback(() => {
+    if (!anticipatedAmount) return;
+
+    add(anticipatedAmount.cents);
+
+    if (flushTimeoutRef.current) {
+      clearTimeout(flushTimeoutRef.current);
+    }
+
+    flushTimeoutRef.current = setTimeout(() => {
+      setAnticipatedAmount(null);
+      flushTimeoutRef.current = null;
+    }, 2000);
+  }, [add, anticipatedAmount]);
+
+  useEffect(() => {
+    return () => {
+      if (flushTimeoutRef.current) {
+        clearTimeout(flushTimeoutRef.current);
+        flushTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!hasPermission || !device) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      void handleRecognize();
+    }, 300);
+
+    return () => clearInterval(interval);
+  }, [device, handleRecognize, hasPermission]);
 
   if (!device) {
     return (
@@ -123,11 +165,11 @@ export default function CameraScreen() {
           </View>
           <View style={styles.captureButtonContainer}>
             <Pressable
-              style={[styles.captureButton, isProcessing && styles.captureButtonDisabled]}
-              onPress={handleRecognize}
-              disabled={isProcessing}
+              style={[styles.captureButton, !anticipatedAmount && styles.captureButtonDisabled]}
+              onPress={handleAddAnticipated}
+              disabled={!anticipatedAmount}
               accessibilityRole="button"
-              accessibilityLabel="Escanear monto"
+              accessibilityLabel="Agregar monto reconocido"
             >
               <View style={styles.captureButtonInner} />
             </Pressable>
@@ -136,9 +178,7 @@ export default function CameraScreen() {
         <View style={styles.overlay}>
           <Text style={styles.overlayTitle}>Reconocimiento de importes</Text>
           <Text style={styles.overlayText}>
-            {isProcessing
-              ? 'Escaneando monto...'
-              : 'Enfocá la cámara en el monto y presioná el botón para escanear.'}
+            {anticipatedAmount ? anticipatedAmount.text : isProcessing ? 'Escaneando monto...' : 'Buscando monto...'}
           </Text>
         </View>
       </View>
