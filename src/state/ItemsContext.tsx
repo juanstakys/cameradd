@@ -35,7 +35,7 @@ function reducer(state: State, action: Action): State {
     case 'DELETE':
       return { ...state, items: state.items.filter((it) => it.id !== action.id) };
     case 'RESET':
-      return initialState;
+      return { ...state, items: [] };
     default:
       return state;
   }
@@ -113,4 +113,3 @@ export function useItems() {
   if (!ctx) throw new Error('useItems must be used within ItemsProvider');
   return ctx;
 }
-

@@ -18,7 +18,7 @@ import { ThemeColors, useThemeColors } from '../../src/theme/colors';
 import { formatCentsArg, parseArgCurrencyWordToCents } from '../../src/utils/currency';
 
 export default function ListScreen() {
-  const { items, remove, edit, totalCents, add } = useItems();
+  const { items, remove, edit, totalCents, add, clearAll } = useItems();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -44,41 +44,44 @@ export default function ListScreen() {
 
   return (
     <View style={styles.container}>
-      {items.length === 0 ? (
-        <View style={styles.empty}>
-          <MaterialIcons name="playlist-remove" size={48} color={colors.textMuted} />
-          <Text style={styles.emptyText}>No hay items aún</Text>
-          <Text style={styles.emptyHint}>Agregue importes desde la cámara</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={items}
-          keyExtractor={(it) => it.id}
-          ItemSeparatorComponent={() => <View style={styles.sep} />}
-          contentContainerStyle={{ paddingVertical: 8 }}
-          renderItem={({ item }) => (
-            <Swipeable
-              renderRightActions={() => (
-                <View style={styles.deleteAction}>
-                  <MaterialIcons name="delete" size={28} color={colors.destructiveContrast} />
+      <View style={styles.content}>
+        {items.length === 0 ? (
+          <View style={styles.empty}>
+            <MaterialIcons name="playlist-remove" size={48} color={colors.textMuted} />
+            <Text style={styles.emptyText}>No hay items aún</Text>
+            <Text style={styles.emptyHint}>Agregue importes desde la cámara</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={items}
+            keyExtractor={(it) => it.id}
+            ItemSeparatorComponent={() => <View style={styles.sep} />}
+            contentContainerStyle={{ paddingVertical: 8 }}
+            style={styles.list}
+            renderItem={({ item }) => (
+              <Swipeable
+                renderRightActions={() => (
+                  <View style={styles.deleteAction}>
+                    <MaterialIcons name="delete" size={28} color={colors.destructiveContrast} />
+                  </View>
+                )}
+                onSwipeableOpen={(dir) => dir === 'right' && remove(item.id)}
+              >
+                <View style={styles.row}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.amount}>${formatCentsArg(item.cents)}</Text>
+                    <Text style={styles.date}>{new Date(item.createdAt).toLocaleString()}</Text>
+                  </View>
+                  <Pressable style={styles.editBtn} onPress={() => onOpenEdit(item.id, item.cents)}>
+                    <MaterialIcons name="edit" size={20} color={colors.accent} />
+                    <Text style={styles.editText}>Editar</Text>
+                  </Pressable>
                 </View>
-              )}
-              onSwipeableOpen={(dir) => dir === 'right' && remove(item.id)}
-            >
-              <View style={styles.row}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.amount}>${formatCentsArg(item.cents)}</Text>
-                  <Text style={styles.date}>{new Date(item.createdAt).toLocaleString()}</Text>
-                </View>
-                <Pressable style={styles.editBtn} onPress={() => onOpenEdit(item.id, item.cents)}>
-                  <MaterialIcons name="edit" size={20} color={colors.accent} />
-                  <Text style={styles.editText}>Editar</Text>
-                </Pressable>
-              </View>
-            </Swipeable>
-          )}
-        />
-      )}
+              </Swipeable>
+            )}
+          />
+        )}
+      </View>
 
       <Modal visible={editingId !== null} animationType="slide" transparent onRequestClose={() => setEditingId(null)}>
         <KeyboardAvoidingView
@@ -110,7 +113,15 @@ export default function ListScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
-      <ManualEntryBar totalCents={totalCents} onAdd={add} />
+      <View style={styles.footer}>
+        <ManualEntryBar totalCents={totalCents} onAdd={add} />
+        {items.length > 0 ? (
+          <Pressable style={styles.resetBtn} onPress={clearAll}>
+            <MaterialIcons name="restart-alt" size={20} color={colors.destructiveContrast} />
+            <Text style={styles.resetBtnText}>Vaciar lista</Text>
+          </Pressable>
+        ) : null}
+      </View>
     </View>
   );
 }
@@ -118,6 +129,8 @@ export default function ListScreen() {
 const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
+    content: { flex: 1 },
+    list: { flex: 1 },
     empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
     emptyText: { fontSize: 16, color: colors.textSecondary },
     emptyHint: { fontSize: 14, color: colors.textMuted },
@@ -186,4 +199,16 @@ const createStyles = (colors: ThemeColors) =>
     btnPrimary: { backgroundColor: colors.accent },
     btnPrimaryText: { color: colors.accentContrast, fontWeight: '700' },
     btnText: { fontSize: 16, color: colors.textPrimary },
+    footer: { paddingTop: 8, paddingBottom: 24, gap: 12 },
+    resetBtn: {
+      marginHorizontal: 16,
+      paddingVertical: 12,
+      borderRadius: 12,
+      backgroundColor: colors.destructive,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+    },
+    resetBtnText: { color: colors.destructiveContrast, fontWeight: '600', fontSize: 16 },
   });
