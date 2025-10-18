@@ -7,8 +7,8 @@ export default function TabsLayout() {
 
   return (
     <Tabs
-      sceneContainerStyle={{ backgroundColor: colors.background }}
       screenOptions={{
+        sceneStyle: { backgroundColor: colors.background },
         headerTitleAlign: 'center',
         headerStyle: { backgroundColor: colors.headerBackground },
         headerTintColor: colors.headerTint,

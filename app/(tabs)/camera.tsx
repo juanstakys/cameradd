@@ -47,10 +47,7 @@ export default function CameraScreen() {
     try {
       isProcessingRef.current = true;
       setIsProcessing(true);
-      const photo = await cameraRef.current.takePhoto({
-        qualityPrioritization: 'balanced',
-        skipMetadata: true,
-      });
+      const photo = await cameraRef.current.takePhoto();
 
       const photoPath = photo?.path;
       if (!photoPath || !photo?.width || !photo?.height) {

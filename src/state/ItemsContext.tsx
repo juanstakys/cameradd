@@ -57,7 +57,7 @@ const STORAGE_KEY = 'cameradd/items.v1';
 
 export function ItemsProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const saveTimeout = useRef<NodeJS.Timeout | null>(null);
+  const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Hydrate
   useEffect(() => {
