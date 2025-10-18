@@ -15,6 +15,9 @@
       "permissions": [
         "android.permission.CAMERA"
       ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png"
+      },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.juanstak.cameradd"
