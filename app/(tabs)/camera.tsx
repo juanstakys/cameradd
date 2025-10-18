@@ -35,7 +35,6 @@ export default function CameraScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [previewSize, setPreviewSize] = useState({ width: 0, height: 0 });
   const [anticipatedAmount, setAnticipatedAmount] = useState<BlockOverlay | null>(null);
-  const flushTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handlePreviewLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
@@ -43,7 +42,7 @@ export default function CameraScreen() {
   }, []);
 
   const handleRecognize = useCallback(async () => {
-    if (!cameraRef.current || isProcessingRef.current || flushTimeoutRef.current) return;
+    if (!cameraRef.current || isProcessingRef.current ) return;
 
     try {
       isProcessingRef.current = true;
@@ -92,25 +91,8 @@ export default function CameraScreen() {
     if (!anticipatedAmount) return;
 
     add(anticipatedAmount.cents);
-
-    if (flushTimeoutRef.current) {
-      clearTimeout(flushTimeoutRef.current);
-    }
-
-    flushTimeoutRef.current = setTimeout(() => {
-      setAnticipatedAmount(null);
-      flushTimeoutRef.current = null;
-    }, 2000);
   }, [add, anticipatedAmount]);
 
-  useEffect(() => {
-    return () => {
-      if (flushTimeoutRef.current) {
-        clearTimeout(flushTimeoutRef.current);
-        flushTimeoutRef.current = null;
-      }
-    };
-  }, []);
 
   useEffect(() => {
     if (!hasPermission || !device) {
