@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
+import { ClearListButton } from '../../src/components/ClearListButton';
 import { ManualEntryBar } from '../../src/components/ManualEntryBar';
 import { useItems } from '../../src/state/ItemsContext';
 import { ThemeColors, useThemeColors } from '../../src/theme/colors';
@@ -113,14 +114,9 @@ export default function ListScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
-      <View style={styles.footer}>
+      <View>
         <ManualEntryBar totalCents={totalCents} onAdd={add} />
-        {items.length > 0 ? (
-          <Pressable style={styles.resetBtn} onPress={clearAll}>
-            <MaterialIcons name="restart-alt" size={20} color={colors.destructiveContrast} />
-            <Text style={styles.resetBtnText}>Vaciar lista</Text>
-          </Pressable>
-        ) : null}
+        {items.length > 0 ? <ClearListButton onPress={clearAll} /> : null}
       </View>
     </View>
   );
@@ -199,16 +195,4 @@ const createStyles = (colors: ThemeColors) =>
     btnPrimary: { backgroundColor: colors.accent },
     btnPrimaryText: { color: colors.accentContrast, fontWeight: '700' },
     btnText: { fontSize: 16, color: colors.textPrimary },
-    footer: { paddingTop: 8, paddingBottom: 24, gap: 12 },
-    resetBtn: {
-      marginHorizontal: 16,
-      paddingVertical: 12,
-      borderRadius: 12,
-      backgroundColor: colors.destructive,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 8,
-    },
-    resetBtnText: { color: colors.destructiveContrast, fontWeight: '600', fontSize: 16 },
   });
