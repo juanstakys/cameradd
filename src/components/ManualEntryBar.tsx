@@ -1,17 +1,17 @@
 import React, { useMemo, useState } from 'react';
 import {
-  View,
-  Text,
-  Pressable,
-  Modal,
   KeyboardAvoidingView,
+  Modal,
   Platform,
-  TextInput,
+  Pressable,
   StyleSheet,
+  Text,
+  TextInput,
+  View,
   ViewStyle,
 } from 'react-native';
-import { formatCentsArg, parseArgCurrencyWordToCents } from '../utils/currency';
 import { ThemeColors, useThemeColors } from '../theme/colors';
+import { formatCentsArg, parseArgCurrencyWordToCents } from '../utils/currency';
 
 type ManualEntryBarProps = {
   totalCents: number;
